@@ -1,0 +1,19 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Moods{% endblock %}
+
+{% block body %}
+    <div>
+        <h1>All Moods</h1>
+        <h6>There are currently {{ moods|length }} moods logged...
+    </div>
+    <div class="row">
+        {% for mood in moods %} {#for loop looks in twig #}
+            <div class="col-12" style="background-color:#f9f9f8; padding: 20px; margin-top: 20px;">
+                <h6 style="float:right">{{ mood.userId.username }}</h6>
+                <h5>{{ mood.emoji }} - {{ mood.feeling }}</h5>
+                <p> {{ mood.description }}</p>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

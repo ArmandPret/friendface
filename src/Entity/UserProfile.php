@@ -1,144 +1,200 @@
 <?php
+    namespace App\Entity;
+    use Doctrine\Common\Collections\ArrayCollection;
+    use Doctrine\Common\Collections\Collection;
+    use Doctrine\ORM\Mapping as ORM;
 
-namespace App\Entity;
-
-use App\Repository\UserProfileRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\ORM\Mapping as ORM;
-
-/**
- * @ORM\Entity(repositoryClass=UserProfileRepository::class)
- */
-class UserProfile
-{
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+    use Symfony\Component\Validator\Constraints as Assert;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $username;
-
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     */
-    private $email;
-
-    /**
-     * @ORM\ManyToMany(targetEntity=UserProfile::class, inversedBy="friendsReceived")
-     * @ORM\JoinTable(name="friendship",
-     *  joinColumns={
-     *      @ORM\JoinColumn(name="send_id", referencedColumnName="id")
-     *  },
-     *  inverseJoinColumns={
-     *      @ORM\JoinColumn(name="received_id", referencedColumnName="id")
-     *  }
-     * )
-     */
-    private $friendsRequested;
-
-    /**
-     * @ORM\ManyToMany(targetEntity=UserProfile::class, mappedBy="friendsRequested")
-     */
-    private $friendsReceived;
-
-    public function __construct()
+    * @ORM\Entity(repositoryClass="App\Repository\UserProfileRepository")
+    */
+    class UserProfile
     {
-        $this->friendsRequested = new ArrayCollection();
-        $this->friendsReceived = new ArrayCollection();
-    }
+        // variables
+        /**
+        * @ORM\Id()
+        * @ORM\GeneratedValue()
+        * @ORM\Column(type="integer")
+        */
+        private $id;
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
+        /**
+        * @ORM\Column(type="string", length=255, nullable=true)
+        */
+        private $username;
 
-    public function getUsername(): ?string
-    {
-        return $this->username;
-    }
+        /**
+         * @ORM\Column(type="string", length=255, nullable=true)
+         */
+        private $email;
 
-    public function setUsername(?string $username): self
-    {
-        $this->username = $username;
+        private $friends;
 
-        return $this;
-    }
+        /**
+        * @ORM\ManyToMany(targetEntity="App\Entity\UserProfile", inversedBy="friendsReceived")
+        * @ORM\JoinTable(name="friendship",
+        *   joinColumns={
+        *       @ORM\JoinColumn(name="sender_id", referencedColumnName="id")
+        *   },
+        *   inverseJoinColumns={
+        *       @ORM\JoinColumn(name="receiver_id", referencedColumnName="id")
+        *   }
+        * )
+        */
+        private $friendsRequested;
 
-    public function getEmail(): ?string
-    {
-        return $this->email;
-    }
+        /**
+         * @ORM\ManyToMany(targetEntity=UserProfile::class, mappedBy="friendsRequested")
+         */
+        private $friendsReceived;
 
-    public function setEmail(?string $email): self
-    {
-        $this->email = $email;
+        /**
+         * @ORM\Column(type="string", length=255)
+         * @Assert\NotBlank()
+         */
+        private $password;
 
-        return $this;
-    }
+        /**
+         * @ORM\OneToMany(targetEntity=Mood::class, mappedBy="user_id")
+         */
+        private $moods;
 
-    //merges the two tables together to get all the friends 
-    public function getFriends(): ?array
-    {
-        return array_merge(
-            $this->getFriendsRequested()->toArray(),
-            $this->getFriendsReceived()->toArray()
-        );
-    }
+        // database functions
+        //getters
+        public function getId(): ?int { return $this->id; }
+        public function getUsername(): ?string { return $this->username; }
 
-    /**
-     * @return Collection|self[]
-     */
-    public function getFriendsRequested(): Collection
-    {
-        return $this->friendsRequested;
-    }
-
-    public function addFriendsRequested(self $friendsRequested): self
-    {
-        if (!$this->friendsRequested->contains($friendsRequested)) {
-            $this->friendsRequested[] = $friendsRequested;
+        public function getEmail(): ?string { return $this->email; }
+        //setters
+        public function setUsername(?string $username): self 
+        {
+            $this->username = $username;
+            return $this;
         }
 
-        return $this;
-    }
-
-    public function removeFriendsRequested(self $friendsRequested): self
-    {
-        $this->friendsRequested->removeElement($friendsRequested);
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|self[]
-     */
-    public function getFriendsReceived(): Collection
-    {
-        return $this->friendsReceived;
-    }
-
-    public function addFriendsReceived(self $friendsReceived): self
-    {
-        if (!$this->friendsReceived->contains($friendsReceived)) {
-            $this->friendsReceived[] = $friendsReceived;
-            $friendsReceived->addFriendsRequested($this);
+        public function setEmail(?string $email): self
+        {
+            $this->email = $email;
+            return $this;
         }
 
-        return $this;
-    }
-
-    public function removeFriendsReceived(self $friendsReceived): self
-    {
-        if ($this->friendsReceived->removeElement($friendsReceived)) {
-            $friendsReceived->removeFriendsRequested($this);
+        public function __construct()
+        {
+            $this->friendsRequested = new ArrayCollection();
+            $this->friendsReceived = new ArrayCollection();
+            $this->moods = new ArrayCollection();
         }
 
-        return $this;
+        // addFriend
+        public function addFriend($friend) {
+            if ($this->friends == null) {
+                $this->friends = array();
+            }
+            array_push($this->friends, $friend);
+        }
+
+        /**
+         * @return Collection|self[]
+         */
+        public function getFriendsRequested(): Collection
+        {
+            return $this->friendsRequested;
+        }
+
+        public function addFriendsRequested(self $friendsRequested): self
+        {
+            if (!$this->friendsRequested->contains($friendsRequested)) {
+                $this->friendsRequested[] = $friendsRequested;
+            }
+
+            return $this;
+        }
+
+        public function removeFriendsRequested(self $friendsRequested): self
+        {
+            $this->friendsRequested->removeElement($friendsRequested);
+
+            return $this;
+        }
+
+        /**
+         * @return Collection|self[]
+         */
+        public function getFriendsReceived(): Collection
+        {
+            return $this->friendsReceived;
+        }
+
+        public function addFriendsReceived(self $friendsReceived): self
+        {
+            if (!$this->friendsReceived->contains($friendsReceived)) {
+                $this->friendsReceived[] = $friendsReceived;
+                $friendsReceived->addFriendsRequested($this);
+            }
+
+            return $this;
+        }
+
+        public function removeFriendsReceived(self $friendsReceived): self
+        {
+            if ($this->friendsReceived->removeElement($friendsReceived)) {
+                $friendsReceived->removeFriendsRequested($this);
+            }
+
+            return $this;
+        }
+
+        //merge the friendsRequested and friendsReceived together
+        public function getFriends(): ?array
+        {
+            return array_merge(
+                $this->getFriendsRequested()->toArray(),
+                $this->getFriendsReceived()->toArray()
+            );
+        }
+
+        public function getPassword(): ?string
+        {
+            return $this->password;
+        }
+
+        public function setPassword(string $password): self
+        {
+            $this->password = $password;
+
+            return $this;
+        }
+
+        /**
+         * @return Collection|Mood[]
+         */
+        public function getMoods(): Collection
+        {
+            return $this->moods;
+        }
+
+        public function addMood(Mood $mood): self
+        {
+            if (!$this->moods->contains($mood)) {
+                $this->moods[] = $mood;
+                $mood->setUserId($this);
+            }
+
+            return $this;
+        }
+
+        public function removeMood(Mood $mood): self
+        {
+            if ($this->moods->removeElement($mood)) {
+                // set the owning side to null (unless already changed)
+                if ($mood->getUserId() === $this) {
+                    $mood->setUserId(null);
+                }
+            }
+
+            return $this;
+        }
+
     }
-}
+?>
