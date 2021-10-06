@@ -1,0 +1,16 @@
+{% extends "base.html.twig" %}
+
+{% block title %}Profile Page{% endblock %}
+
+{% block body %}
+    <div class="row">
+        This is the profile of {{ user.username }} ({{ user.email }}) and they have {{ user.friends|length }} friends:
+    </div>
+    <div class="row">
+        <ul>
+            {% for friend in user.friends %} {#for loop looks in twig #}
+                <li>{{ friend.username }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}
