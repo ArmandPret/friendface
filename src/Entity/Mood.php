@@ -38,6 +38,11 @@ class Mood
      */
     private $user_id;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $likesCount;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -87,6 +92,18 @@ class Mood
     public function setUserId(?UserProfile $user_id): self
     {
         $this->user_id = $user_id;
+
+        return $this;
+    }
+
+    public function getLikesCount(): ?int
+    {
+        return $this->likesCount;
+    }
+
+    public function setLikesCount(?int $likesCount): self
+    {
+        $this->likesCount = $likesCount;
 
         return $this;
     }
