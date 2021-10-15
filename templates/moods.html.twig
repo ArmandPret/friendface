@@ -13,7 +13,16 @@
                 <h6 style="float:right">{{ mood.userId.username }}</h6>
                 <h5>{{ mood.emoji }} - {{ mood.feeling }}</h5>
                 <p> {{ mood.description }}</p>
+                {# like button #}
+                <div class="likeButton btn btn-warning" style="float:left" data-id="{{ mood.id }}">
+                    Like &nbsp;
+                    <p style="float:right">{{ mood.likesCount }}</p>
+                </div>
             </div>
         {% endfor %}
     </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="../js/likes.js"></script>
 {% endblock %}
